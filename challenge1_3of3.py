@@ -1,3 +1,4 @@
+#!/usr/bin/python2
 # coding: utf-8
 '''
 Exploit local binary for bof with stack aslr.
